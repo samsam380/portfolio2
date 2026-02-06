@@ -578,8 +578,8 @@
   <div class="rateswrap">
     <div class="left">
       <div class="ratepill"><span class="label">USD→IDR</span><span id="rateUsdIdr">—</span></div>
-      <div class="ratepill"><span class="label">USD→BTC</span><span id="rateUsdBtc">—</span></div>
-      <div class="ratepill"><span class="label">USD→1g Gold</span><span id="rateUsdGoldg">—</span></div>
+      <div class="ratepill"><span class="label">BTC→USD</span><span id="rateBtcUsd">—</span></div>
+      <div class="ratepill"><span class="label">Gold→USD (oz)</span><span id="rateGoldUsdOz">—</span></div>
     </div>
     <div class="small" id="ratesUpdated">Rates updated: —</div>
   </div>
@@ -866,8 +866,8 @@
 
   // rates bar
   const rateUsdIdr = el("rateUsdIdr");
-  const rateUsdBtc = el("rateUsdBtc");
-  const rateUsdGoldg = el("rateUsdGoldg");
+  const rateBtcUsd = el("rateBtcUsd");
+  const rateGoldUsdOz = el("rateGoldUsdOz");
   const ratesUpdated = el("ratesUpdated");
 
   // Scenario modal
@@ -1312,26 +1312,27 @@
   // Live rates bar
   // ----------------------------
   function renderRatesBar(){
-    // USD->IDR (from FX)
+    // USD->IDR
     const idrRate = state.fx?.rates?.IDR;
-    rateUsdIdr.textContent = idrRate ? idrRate.toLocaleString(undefined, { maximumFractionDigits: 2 }) : "—";
-
-    // USD->BTC (from bitcoin USD price)
+    rateUsdIdr.textContent = idrRate
+      ? idrRate.toLocaleString(undefined, { maximumFractionDigits: 2 })
+      : "—";
+  
+    // BTC->USD (CoinGecko: bitcoin price in USD)
     const btcUsd = state.pricesUSD?.bitcoin;
-    rateUsdBtc.textContent = (btcUsd && isFinite(btcUsd)) ? (1 / btcUsd).toFixed(8) : "—";
-
-    // USD->1g Gold
-    // If gold spot available: usdPerGram = usdPerOz / 31.1034768, so USD->1g gold in grams per USD = 1/usdPerGram
+    rateBtcUsd.textContent = (btcUsd && isFinite(btcUsd))
+      ? new Intl.NumberFormat(undefined, { style:"currency", currency:"USD", maximumFractionDigits: 0 }).format(btcUsd)
+      : "—";
+  
+    // Gold->USD (oz) (metals.live gives USD per troy oz)
     const usdPerOz = state.pricesUSD?.__gold_usd_oz;
-    if(usdPerOz && isFinite(usdPerOz)){
-      const usdPerGram = usdPerOz / 31.1034768;
-      rateUsdGoldg.textContent = (1 / usdPerGram).toFixed(6) + " g";
-    } else {
-      rateUsdGoldg.textContent = "—";
-    }
-
+    rateGoldUsdOz.textContent = (usdPerOz && isFinite(usdPerOz))
+      ? new Intl.NumberFormat(undefined, { style:"currency", currency:"USD", maximumFractionDigits: 2 }).format(usdPerOz)
+      : "—";
+  
     ratesUpdated.textContent = "Rates updated: " + (state.lastRefresh || "—");
   }
+
 
   // ----------------------------
   // Scenarios UI
